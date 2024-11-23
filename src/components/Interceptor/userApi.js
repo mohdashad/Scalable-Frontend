@@ -22,8 +22,17 @@ userApi.interceptors.request.use(
 userApi.interceptors.response.use(
   (response) => response,
   async (error) => {
-    if (error.response?.status === 401) {      
-        window.location.href = '/login';
+      // Access token might have expired
+      try {
+        //const body=JSON.stringify({"clientId":"1234567890abcdefg.request.service.com"});
+        //const refreshResponse = await axios.post('http://localhost:7000/api/transaction/auth/', {"clientId":"1234567890abcdefg.request.service.com"});
+        accessToken = localStorage.getItem('token');
+        error.config.headers.Authorization = `Bearer ${accessToken}`;
+        return userApi.request(error.config); // Retry original request
+      } catch (refreshError) {
+        console.error('Refresh token failed:', refreshError);
+        // Redirect to login or show error
+        //window.location.href = '/login';
       }
     } 
  );
